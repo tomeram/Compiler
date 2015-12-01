@@ -1,0 +1,19 @@
+
+_DV_A: []
+
+########################
+## Class Fields Offsets
+## A: []
+########################
+
+_ic_main:
+
+_while_condition_0:
+Move 0,R1
+Compare 0,R1
+JumpTrue _while_end_0
+Jump _while_condition_0
+Jump _while_condition_0
+
+_while_end_0:
+Library __exit(0),Rdummy

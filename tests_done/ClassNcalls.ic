@@ -1,0 +1,45 @@
+class A {
+	int k;
+	string s;
+	C c;
+
+	static void main(string[] args) {
+	A aa = new A();
+	B bb = new B();
+	aa.moo(bb);
+	C cc = new C();
+	C.staticC();
+	cc.virtualC();
+	}
+	
+	void moo(B b) {
+		b.x = 1;
+		b.x = B.staticMoo("meow");
+	}
+	
+	static int staticMoo(string s) {
+	s = s + s;
+	return 42;
+	}
+	
+	void override(int[] k, string[][][] s) {
+	
+	}
+}
+
+class B extends A {
+	int x;
+	
+	void override(int[] k2, string[][][] s2) {
+	
+	}
+	
+}	
+class C {
+	static void staticC() {
+	
+	}
+	
+	void virtualC() {
+	}
+}

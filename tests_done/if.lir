@@ -1,0 +1,94 @@
+
+_DV_Meow: []
+
+########################
+## Class Fields Offsets
+## Meow: []
+########################
+
+_ic_main:
+Move 0,R1
+Move R1,v1_k
+Move 1,R1
+Move 1,R2
+Add R2,R1
+Move 2,R2
+Compare R2,R1
+JumpFalse _jump_false_1
+
+_jump_true_1:
+Move 1,R1
+Jump _jump_endif_1
+
+_jump_false_1:
+Move 0,R1
+
+_jump_endif_1:
+Compare 0,R1
+JumpTrue _if_end_0
+Move 1,R1
+Move R1,v1_k
+Move 3,R1
+Move 4,R2
+Compare R2,R1
+JumpLE _jump_false_3
+
+_jump_true_3:
+Move 1,R1
+Jump _jump_endif_3
+
+_jump_false_3:
+Move 0,R1
+
+_jump_endif_3:
+Move 1,R2
+And R2,R1
+Compare 0,R1
+JumpTrue _if_end_2
+Move 5,R1
+Move R1,v1_k
+
+_if_end_2:
+Move v1_k,R1
+Neg R1
+Move 1,R2
+Neg R2
+Compare R2,R1
+JumpFalse _jump_false_5
+
+_jump_true_5:
+Move 1,R1
+Jump _jump_endif_5
+
+_jump_false_5:
+Move 0,R1
+
+_jump_endif_5:
+Not R1
+Not R1
+Compare 0,R1
+JumpTrue _if_false_4
+Move 5,R1
+Neg R1
+Move R1,v1_k
+Jump _if_end_4
+
+_if_false_4:
+Move 10,R1
+Move R1,v1_k
+
+_if_end_4:
+
+_if_end_0:
+Move 1,R1
+Move 0,R2
+Or R2,R1
+Compare 0,R1
+JumpTrue _if_end_6
+Move v1_k,R1
+Move 1,R2
+Add R2,R1
+Move R1,v1_k
+
+_if_end_6:
+Library __exit(0),Rdummy

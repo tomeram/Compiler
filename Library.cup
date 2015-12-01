@@ -1,0 +1,124 @@
+package IC.Parser;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import java_cup.runtime.Symbol;
+
+import IC.AST.*;
+import IC.DataTypes;
+
+
+/* Preliminaries to set up and use the scanner.  */
+parser code {:
+	public void report_fatal_error(String message, Object info) throws SyntaxError {
+		throw new SyntaxError();
+	}
+
+	public void syntax_error(Symbol cur_token) {
+		int i = 0;
+		expected_token_ids();
+		expected_token_ids();
+		expected_token_ids();
+		List<Integer> lst = expected_token_ids();
+	
+		Token k = (Token) cur_token;
+		System.err.print(k.left + ":" + k.right + " : syntax error; found \"" + k.getTagString() + "\", expected: ");
+		for (i = 0; i < lst.size(); i++) 
+			System.err.print(" '"+ symbl_name_from_id(lst.get(i)) + "'");
+		System.err.println("");
+	}
+:}
+
+////////////////////////////////////////////
+// Symbol list (terminals and non-terminals)
+
+non terminal Program program;
+non terminal ICClass	libic;
+non terminal List<Method> libmethod;
+non terminal Method libmethod_main;
+non terminal Type type;
+non terminal List<Formal> formals;
+non terminal Formal formals_main;
+
+terminal LP, RP, CLASS, STATIC, VOID, STRING, COL, LSP, RSP, LCP, RCP, 
+		 SEMICOL, INT, BOOLEAN;
+
+terminal	String	CLASS_ID;
+terminal 	String	ID;
+
+//////////////////////////
+// Precedence declarations
+
+//////////////
+// The grammar
+
+//TODO check if we need to add Program as root
+
+program			::= libic:pl
+ 						{: 	List tmp =   new LinkedList<ICClass>();
+ 						
+							tmp.add(pl);
+							
+ 							RESULT = new Program(tmp);
+ 						 :} ;
+
+
+libic 			::= CLASS CLASS_ID:l LCP libmethod:lm RCP
+						{: 
+							if(!"Library".equals(l))
+								throw new SyntaxError();
+							else
+								RESULT = new ICClass(lleft, l, new LinkedList<Field>(), lm);
+						:};
+			
+
+libmethod 		::= libmethod_main:m libmethod:mlist
+						{:
+							mlist.add(0,m);
+							RESULT = mlist;
+						:}
+					| {: RESULT = new LinkedList<Method>(); :};
+
+
+libmethod_main 	::= STATIC type:i0 ID:i1 LP formals:i2 RP SEMICOL
+						{: RESULT = new LibraryMethod(i0, i1, i2); :} 
+					|
+					STATIC VOID:i0 ID:i1 LP formals:i2 RP SEMICOL
+						{:	Type voidtype = new PrimitiveType(i0left, DataTypes.VOID);
+							RESULT = new LibraryMethod(voidtype, i1, i2); :} ;
+				
+
+type			::=	
+					INT:i0
+						{: RESULT = new PrimitiveType(i0left, DataTypes.INT); :} 
+					|
+					BOOLEAN:i0
+						{: RESULT = new PrimitiveType(i0left, DataTypes.BOOLEAN); :} 
+					|
+					STRING:i0
+						{: RESULT = new PrimitiveType(i0left, DataTypes.STRING); :}
+					|
+					CLASS_ID:i0
+						{: RESULT = new UserType(i0left, i0); :}
+					|
+					type:i0 LSP RSP
+							{:
+								i0.incrementDimension();
+								RESULT = i0;
+							:};
+						
+
+formals			::=	formals_main:frml
+						{: 	List<Formal> frmllist = new LinkedList<Formal>();
+							frmllist.add(frml);
+							RESULT = frmllist; :}
+					| 
+					formals:i0 COL formals_main:i1
+						{: 	i0.add(i1);
+							RESULT = i0;:}
+					|	{: RESULT = new LinkedList<Formal>(); :} ;
+							
+								
+formals_main	::= type:i0 ID:i1
+ 						{: RESULT = new Formal(i0, i1); :} ;

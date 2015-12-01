@@ -1,0 +1,13 @@
+class A {
+	static void main(string[] args) {
+		A a = new A();
+		int k = 1;
+		k = a.moo(k) + a.moo(3);
+	}
+	
+	int moo(int k) {
+		k = k + 2;
+		return k;
+	}
+}
+

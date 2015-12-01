@@ -1,0 +1,9 @@
+Summary for /www/javadecompilers/app/public/data/01.12.15/6bcb4f111fe342858a850c0a5d6b64ba/comp.jar
+Decompiled with CFR 0_110
+
+
+IC.Parser.Lexer
+----------------------------
+
+next_token()
+  Unable to fully structure code

@@ -1,0 +1,22 @@
+class A {
+	static void main(string[] args) {
+	
+		int i = 0;
+		while(i < 5) {
+			i = i + 1;
+			while (i < 2) {
+				i = i + 1;
+			}
+		}
+		
+		int j;
+		j = 50;
+		while(j > i) {
+			j = i-1;
+		}
+	
+		
+	}
+	
+}
+

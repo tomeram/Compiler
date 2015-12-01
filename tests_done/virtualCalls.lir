@@ -1,0 +1,32 @@
+
+_DV_A: [_A_moo]
+
+########################
+## Class Fields Offsets
+## A: []
+########################
+
+_ic_main:
+Library __allocateObject(4),R1
+MoveField _DV_A,R1.0
+Move R1,v1_a
+Move 1,R1
+Move R1,v2_k
+Move v1_a,R2
+Move v2_k,R3
+VirtualCall R2.0(v3_k=R3),R1
+Move v1_a,R3
+Move 3,R4
+VirtualCall R3.0(v3_k=R4),R2
+Add R2,R1
+Move R1,v2_k
+Library __exit(0),Rdummy
+
+_A_moo:
+Move v3_k,R1
+Move 2,R2
+Add R2,R1
+Move R1,v3_k
+Move v3_k,R1
+Return R1
+Return Rdummy

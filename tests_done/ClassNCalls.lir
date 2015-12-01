@@ -1,0 +1,63 @@
+str_0: "meow"
+
+_DV_A: [_A_moo,_A_staticMoo,_A_override]
+_DV_B: [_A_moo,_A_staticMoo,_B_override]
+_DV_C: [_C_staticC,_C_virtualC]
+
+########################
+## Class Fields Offsets
+## A: [(1:k),(2:s),(3:c)]
+## B: [(1:k),(2:s),(3:c),(4:x)]
+## C: []
+########################
+
+_ic_main:
+Library __allocateObject(16),R1
+MoveField _DV_A,R1.0
+Move R1,v1_aa
+Library __allocateObject(20),R1
+MoveField _DV_B,R1.0
+Move R1,v2_bb
+Move v1_aa,R2
+Move v2_bb,R3
+VirtualCall R2.0(v3_b=R3),R1
+Library __allocateObject(4),R1
+MoveField _DV_C,R1.0
+Move R1,v4_cc
+StaticCall _C_staticC(),R1
+Move v4_cc,R2
+VirtualCall R2.1(),R1
+Library __exit(0),Rdummy
+
+_A_moo:
+Move 1,R1
+Move v3_b,R2
+Move R2,R2
+MoveField R1,R2.4
+Move str_0,R2
+StaticCall _A_staticMoo(v5_s=R2),R1
+Move v3_b,R2
+Move R2,R2
+MoveField R1,R2.4
+Return Rdummy
+
+_A_staticMoo:
+Move v5_s,R1
+Move v5_s,R2
+Library __stringCat(R1, R2),R1
+Move R1,v5_s
+Move 42,R1
+Return R1
+Return Rdummy
+
+_A_override:
+Return Rdummy
+
+_B_override:
+Return Rdummy
+
+_C_staticC:
+Return Rdummy
+
+_C_virtualC:
+Return Rdummy

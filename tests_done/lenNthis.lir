@@ -1,0 +1,36 @@
+
+_DV_A: []
+_DV_B: [_B_moo]
+
+########################
+## Class Fields Offsets
+## A: []
+## B: [(1:b_arr),(2:len)]
+########################
+
+_ic_main:
+Move 10,R2
+Mul 4,R2
+Library __allocateArray(R2),R1
+Move R1,v1_a
+Move v1_a,R1
+ArrayLength R1,R1
+Move R1,v2_l
+Library __allocateObject(12),R1
+MoveField _DV_B,R1.0
+Move R1,v3_b
+Move v3_b,R2
+Move v2_l,R3
+Move v1_a,R4
+VirtualCall R2.0(v4_len=R3, v5_arr=R4),R1
+Library __exit(0),Rdummy
+
+_B_moo:
+Move v4_len,R1
+Move this,R2
+Move R2,R2
+MoveField R1,R2.2
+Move v5_arr,R1
+Move this,R2
+MoveField R1,R2.1
+Return Rdummy

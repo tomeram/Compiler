@@ -1,0 +1,22 @@
+class Meow {
+
+	static void main(string[] args) {
+		int k = 0;
+		if (1+1 == 2) {
+			k = 1;
+			if(3 > 4 && true) {
+				k = 5;
+			}
+			
+			if (!(-k == -1)) { //known lir problem. !false returns false...
+				k = -5;
+			} 
+			else {
+				k = 10;
+			}
+		}
+		if (true || false)
+			k = k+1;
+	}
+}
+

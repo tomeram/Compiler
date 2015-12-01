@@ -1,0 +1,47 @@
+
+_DV_Test: [_Test_moo]
+_DV_A: []
+
+########################
+## Class Fields Offsets
+## Test: []
+## A: [(1:i)]
+########################
+
+_ic_main:
+Library __exit(0),Rdummy
+
+_Test_moo:
+Move 5,R2
+Mul 4,R2
+Library __allocateArray(R2),R1
+Move R1,v1_t
+Move v2_s,R4
+Move 0,R5
+Move R4,R6
+MoveArray R6[R5],R3
+Move 0,R4
+Move R3,R5
+MoveArray R5[R4],R2
+ArrayLength R2,R2
+Mul 4,R2
+Library __allocateArray(R2),R1
+Move R1,v3_aa
+Move v4_a,R2
+Move 0,R3
+Move R2,R4
+MoveArray R4[R3],R1
+ArrayLength R1,R1
+Move R1,v5_k
+Move v5_k,R1
+Move v4_a,R5
+Move 0,R6
+Move R5,R7
+MoveArray R7[R6],R4
+Move 5,R5
+Move R4,R6
+MoveArray R6[R5],R3
+MoveField R3.1,R2
+Add R2,R1
+Move R1,v5_k
+Return Rdummy

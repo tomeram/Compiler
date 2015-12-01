@@ -1,0 +1,21 @@
+class Test {
+
+	static void main(string[] args) {
+	
+	}
+	
+	int[] moo(string[][][] s, A[][] a) {
+	
+	Test[][] t = new Test[][5];
+	A[] aa = new A[s[0][0].length];
+	int k = a[0].length;
+	k = k + a[0][5].i;	
+	
+	
+	}
+}
+
+class A {
+	int i;
+}
+

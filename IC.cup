@@ -1,0 +1,340 @@
+package IC.Parser;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import java_cup.runtime.Symbol;
+
+import IC.AST.*;
+import IC.DataTypes;
+import IC.BinaryOps;
+import IC.UnaryOps;
+import IC.LiteralTypes;
+
+parser code {:
+	public void report_fatal_error(String message, Object info) throws SyntaxError {
+		throw new SyntaxError();
+	}
+
+	public void syntax_error(Symbol cur_token) {
+		int i = 0;
+		expected_token_ids();
+		expected_token_ids();
+		expected_token_ids();
+		List<Integer> lst = expected_token_ids();
+	
+		Token k = (Token) cur_token;
+		System.err.print(k.left + ":" + k.right + " : syntax error; found \"" + k.getTagString() + "\", expected: ");
+		for (i = 0; i < lst.size(); i++) 
+			System.err.print(" '"+ symbl_name_from_id(lst.get(i)) + "'");
+		System.err.println("");
+	}
+:}
+
+////////////////////////////////////////////
+// Symbol list (terminals and non-terminals)
+
+terminal LP, RP, CLASS, STATIC, VOID, STRING, COL, LSP, RSP, LCP, RCP, 
+		 SEMICOL, INT, BOOLEAN;
+		 
+terminal	String	CLASS_ID;
+terminal 	String	ID;
+
+terminal NUM, IF, ELSE, EXTENDS, RETURN, WHILE, 
+		 BREAK, CONTINUE, THIS, NEW, LENGTH, TRUE, FALSE, NULL, DOT, MINUS, EXCLAM, MULTI, DIV, MOD, PLUS, LT, GT, LE, GE, EQEQ, NE, AND, OR, EQ, 
+		 STRING_LITERAL;
+
+terminal	UMINUS;	
+
+
+non terminal 	Program 			program;
+non terminal	List<ICClass>		classDecl_list;
+non terminal	ICClass				classDecl;
+non terminal	FieldMethodLists	field_method_list, field_type;
+non terminal	LinkedList<String>	field_list;
+non terminal	Type				type;
+non terminal	Method				method, stat_method;
+non terminal	Statement			stmt, if;
+non terminal	List<Statement>		stmt_list;
+non terminal	List<Formal>		formals;
+non terminal	Formal				formals_main;
+non terminal	Location			location;
+non terminal	Expression			expr;
+non terminal	Call				call;
+non terminal	List<Expression>	expr_list, expr_col;
+non terminal	StaticCall			static_call;
+non terminal	VirtualCall			virtual_call;
+non terminal	BinaryOp			bin_op_math, bin_op_logic;
+non terminal	UnaryOp				un_op;
+non terminal 	Literal				literal_ter, literal_val;
+
+//////////////////////////
+// Precedence declarations
+
+
+precedence left OR;
+precedence left AND;
+precedence left EQEQ, NE;
+precedence left LT, LE, GT, GE;
+precedence left PLUS, MINUS;
+precedence left DIV, MULTI, MOD;
+precedence right UMINUS, EXCLAM;
+precedence left RP, LP, RSP, LSP, DOT;
+precedence left IF,ELSE;
+
+//////////////
+// The grammar
+
+program				::= classDecl_list:pl
+ 							{: RESULT = new Program(pl); :};
+						
+classDecl_list 		::= classDecl_list:l classDecl:cl
+							{:
+								l.add(cl);
+								RESULT = l;
+							:}
+						|
+							{: RESULT = new LinkedList<ICClass>(); :};
+
+classDecl			::= CLASS CLASS_ID:ci LCP field_method_list:fm RCP
+							{: RESULT = new ICClass(cileft, ci, fm.getField_list(), fm.getMethod_list()); :}
+						| CLASS CLASS_ID:ci EXTENDS CLASS_ID:ci2 LCP field_method_list:fm RCP
+							{: RESULT = new ICClass(cileft, ci, ci2, fm.getField_list(), fm.getMethod_list());; :};
+
+field_method_list 	::= field_method_list:fml field_type:fm
+							{:
+								fml.getField_list().addAll(fm.getField_list());
+								RESULT = fml;
+							:}
+						| field_method_list:fml stat_method:fm
+							{:
+								fml.addMethod(fm);
+								RESULT = fml;
+							:}
+						|
+							{: RESULT = new FieldMethodLists(); :};
+
+field_type			::= type:t field_list:fl SEMICOL
+							{:
+								RESULT = new FieldMethodLists();
+
+								for (String s: fl) {
+									RESULT.addField(new Field(t, s));
+								}
+							:};
+
+field_list			::= ID:i
+							{:
+								RESULT = new LinkedList<String>();
+								RESULT.add(i);
+							:}
+						| ID:i COL field_list:fl
+							{:
+								fl.add(i);
+								RESULT = fl;
+							:};
+
+stat_method			::= STATIC method:m
+							{: 
+								RESULT = new StaticMethod(m.getType(), m.getName(), m.getFormals(), m.getStatements());
+							:}
+						| method:m
+							{: RESULT = m; :};
+
+method			 	::= type:t ID:i LP formals:f RP LCP stmt_list:s RCP
+							{: RESULT = new VirtualMethod(t, i, f, s); :}
+						| type:t ID:i LP formals:f RP LCP RCP
+							{: RESULT = new VirtualMethod(t, i, f, new LinkedList<Statement>()); :}
+						| VOID ID:i LP formals:f RP  LCP stmt_list:s RCP
+							{: RESULT = new VirtualMethod(new PrimitiveType(ileft, DataTypes.VOID), i, f, s); :}
+						| VOID ID:i LP formals:f RP  LCP RCP
+							{: RESULT = new VirtualMethod(new PrimitiveType(ileft, DataTypes.VOID), i, f, new LinkedList<Statement>()); :};
+
+formals				::=	formals_main:frml
+							{:
+								List<Formal> frmllist = new LinkedList<Formal>();
+								frmllist.add(frml);
+								RESULT = frmllist;
+							:}
+						| formals:i0 COL formals_main:i1
+							{:
+								i0.add(i1);
+								RESULT = i0;
+							:}
+						|
+							{: RESULT = new LinkedList<Formal>(); :};
+							
+								
+formals_main		::= type:i0 ID:i1
+ 							{: RESULT = new Formal(i0, i1); :};
+
+type				::= INT:i0
+							{: RESULT = new PrimitiveType(i0left, DataTypes.INT); :} 
+						| BOOLEAN:i0
+							{: RESULT = new PrimitiveType(i0left, DataTypes.BOOLEAN); :} 
+						| STRING:i0
+							{: RESULT = new PrimitiveType(i0left, DataTypes.STRING); :}
+						| CLASS_ID:i0
+							{: RESULT = new UserType(i0left, i0); :}
+						| type:i0 LSP RSP
+							{:
+								i0.incrementDimension();
+								RESULT = i0;
+							:};
+
+call 				::= static_call:sc
+							{: RESULT = sc; :}
+						| virtual_call:vc
+							{: RESULT = vc; :};
+
+static_call			::= CLASS_ID:i0 DOT ID:i1 LP expr_list:el RP
+							{: RESULT = new StaticCall(i0left, i0, i1, el); :};
+
+virtual_call		::= expr:e DOT ID:i LP expr_list:el RP
+							{: RESULT = new VirtualCall(eleft, e, i, el); :}
+						| ID:i LP expr_list:el RP
+							{: RESULT = new VirtualCall(ileft, i, el); :};
+
+location			::= ID:i
+							{: RESULT = new VariableLocation(ileft, i); :}
+						| expr:e DOT ID:i
+							{: RESULT = new VariableLocation(ileft, e, i); :}
+						| expr:e1 LSP expr:e2 RSP
+							{: RESULT = new ArrayLocation(e1, e2); :};
+
+bin_op_math			::= expr:e1 MULTI expr:e2
+							{: RESULT = new MathBinaryOp(e1, BinaryOps.MULTIPLY, e2); :}
+						| expr:e1 DIV expr:e2
+							{: RESULT = new MathBinaryOp(e1, BinaryOps.DIVIDE, e2); :}
+						| expr:e1 MOD expr:e2
+							{: RESULT = new MathBinaryOp(e1, BinaryOps.MOD, e2); :}
+						| expr:e1 PLUS expr:e2
+							{: RESULT = new MathBinaryOp(e1, BinaryOps.PLUS, e2); :}
+						| expr:e1 MINUS expr:e2
+							{: RESULT = new MathBinaryOp(e1, BinaryOps.MINUS, e2); :};
+
+bin_op_logic		::= expr:e1 AND expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.LAND, e2); :}
+						| expr:e1 OR expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.LOR, e2); :}
+						| expr:e1 LT expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.LT, e2); :}
+						| expr:e1 LE expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.LTE, e2); :}
+						| expr:e1 GT expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.GT, e2); :}
+						| expr:e1 GE expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.GTE, e2); :}
+						| expr:e1 EQEQ expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.EQUAL, e2); :}
+						| expr:e1 NE expr:e2
+							{: RESULT = new LogicalBinaryOp(e1, BinaryOps.NEQUAL, e2); :};
+
+un_op				::= MINUS expr:e
+							{: RESULT = new MathUnaryOp(UnaryOps.UMINUS, e); :}
+							%prec UMINUS
+						| EXCLAM expr:e
+							{: RESULT = new LogicalUnaryOp(UnaryOps.LNEG, e); :};
+
+expr_list			::= expr_col:e
+							{: RESULT = e; :}
+						|
+							{: RESULT = new LinkedList<Expression>(); :};
+
+expr_col			::= expr:e
+							{:
+								RESULT = new LinkedList<Expression>();
+								RESULT.add(e);
+							:}
+						| expr_col:ec COL expr:e
+							{:
+								ec.add(e);
+								RESULT = ec;
+							:};
+
+stmt_list			::= stmt:s
+							{:
+								RESULT = new LinkedList<Statement>();
+								RESULT.add(s);
+							:}
+						| stmt_list:sl stmt:s
+							{:
+								sl.add(s);
+								RESULT = sl;
+							:};
+
+stmt				::= location:l EQ expr:e SEMICOL
+							{: RESULT = new Assignment(l, e); :}
+						| call:c SEMICOL
+							{: RESULT = new CallStatement(c); :}
+						| RETURN:r SEMICOL
+							{: RESULT = new Return(rleft); :}
+						| RETURN expr:e SEMICOL
+							{: RESULT = new Return(eleft, e); :}
+						| if:f
+							{: RESULT = f; :}
+						| WHILE LP expr:e RP stmt:s
+							{: RESULT = new While(e, s); :}
+						| BREAK:b SEMICOL
+							{: RESULT = new Break(bleft); :}
+						| CONTINUE:c SEMICOL
+							{: RESULT = new Continue(cleft); :}
+						| LCP:l stmt_list:sl RCP
+							{: RESULT = new StatementsBlock(lleft, sl); :}
+						| LCP:l RCP
+							{: RESULT = new StatementsBlock(lleft, new LinkedList<Statement>()); :}
+						| type:t ID:i SEMICOL
+							{: RESULT = new LocalVariable(t, i); :}
+						| type:t ID:i EQ expr:e SEMICOL
+							{: RESULT = new LocalVariable(t, i, e); :};
+
+if					::= IF LP expr:e RP stmt:s
+							{: RESULT = new If(e, s); :}
+						| IF LP expr:e RP stmt:s1 ELSE stmt:s2
+							{: RESULT = new If(e, s1, s2); :};
+
+expr				::= location:l
+							{: RESULT = l; :}
+						| call:c
+							{: RESULT = c; :}
+						| THIS:t
+							{: RESULT = new This(tleft); :}
+						| NEW CLASS_ID:ci LP RP
+							{: RESULT = new NewClass(cileft, ci); :}
+						| NEW type:t LSP expr:e RSP
+							{: RESULT = new NewArray(t, e); :}
+						| expr:e DOT LENGTH
+							{: RESULT = new Length(e); :}
+						| bin_op_math:b
+							{: RESULT = b; :}
+						| bin_op_logic:b
+							{: RESULT = b; :}
+						| un_op:o
+							{: RESULT = o;	:}
+						| literal_ter:l
+							{: RESULT = l; :}
+						| literal_val:l
+							{: RESULT = l; :}
+						| LP expr:e RP
+							{: RESULT = new ExpressionBlock(e); :};
+
+literal_ter			::= TRUE:l
+							{: RESULT = new Literal(lleft, LiteralTypes.TRUE); :}
+						| FALSE:l
+							{: RESULT = new Literal(lleft, LiteralTypes.FALSE); :}
+						| NULL:l
+							{: RESULT = new Literal(lleft, LiteralTypes.NULL); :};
+
+literal_val			::= NUM:l
+							{:
+								int i;
+								try {
+									i = Integer.parseInt((String) l);
+								} catch (Exception e) {
+									System.err.println(lleft + ":" + lright + ": syntax error; found \"" + l + "\", integer out of bound.");
+									throw new SyntaxError();
+								}  
+								RESULT = new Literal(lleft, LiteralTypes.INTEGER, i + ""); 
+							:}
+						| STRING_LITERAL:l
+							{: RESULT = new Literal(lleft, LiteralTypes.STRING, l); :};

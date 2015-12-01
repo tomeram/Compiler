@@ -1,0 +1,19 @@
+class A {
+	static void main(string[] args) {
+		int[] a;
+		a = new int[10];
+		int l = a.length;
+		B b = new B();
+		b.moo(l, a);
+	}
+}
+
+class B {
+	int[] b_arr;
+	int len;
+	
+	void moo(int len, int[] arr) {
+		this.len = len;
+		b_arr = arr;
+	}
+}
